@@ -102,7 +102,7 @@ def get_denorm(rotation_matrix, translation):
     return denorm
 
 def generate_info_dair(dair_root, split):    
-    infos = mmcv.load("data/single-infrastructure-split-data.json")
+    infos = mmcv.load("data/single-infrastructure-split-data-local.json")
     split_list = infos[split]
     infos = list()
     for sample_id in tqdm(split_list):

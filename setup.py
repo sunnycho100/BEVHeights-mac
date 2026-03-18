@@ -64,6 +64,6 @@ setup(
             sources=['src/voxel_pooling_forward.cpp'],
             sources_cuda=['src/voxel_pooling_forward_cuda.cu'],
         ),
-    ],
+    ] if (torch.cuda.is_available() or os.getenv('FORCE_CUDA', '0') == '1') else [],
     cmdclass={'build_ext': BuildExtension},
 )

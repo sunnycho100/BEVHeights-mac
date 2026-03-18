@@ -2,7 +2,49 @@
 import torch
 from torch.autograd import Function
 
-from . import voxel_pooling_ext
+try:
+    from . import voxel_pooling_ext
+    _CUDA_AVAILABLE = voxel_pooling_ext is not None
+except ImportError:
+    _CUDA_AVAILABLE = False
+
+
+def _voxel_pooling_pure_pytorch(geom_xyz, input_features, voxel_num):
+    """Pure PyTorch fallback for voxel pooling (scatter_add based).
+
+    Args:
+        geom_xyz (Tensor): Integer voxel coords [B, N, 3] (x, y, z).
+        input_features (Tensor): Features [B, N, C].
+        voxel_num (Tensor): [voxel_x, voxel_y, voxel_z].
+
+    Returns:
+        Tensor: (B, C, H, W) BEV feature map.
+    """
+    geom_xyz = geom_xyz.reshape(geom_xyz.shape[0], -1, geom_xyz.shape[-1])
+    input_features = input_features.reshape(geom_xyz.shape[0], -1,
+                                            input_features.shape[-1])
+    batch_size = geom_xyz.shape[0]
+    num_channels = input_features.shape[2]
+    vx, vy, vz = int(voxel_num[0]), int(voxel_num[1]), int(voxel_num[2])
+
+    output = input_features.new_zeros(batch_size, vy, vx, num_channels)
+
+    for b in range(batch_size):
+        coords = geom_xyz[b]  # [N, 3]
+        feats = input_features[b]  # [N, C]
+        # Filter out-of-bound points
+        valid = ((coords[:, 0] >= 0) & (coords[:, 0] < vx) &
+                 (coords[:, 1] >= 0) & (coords[:, 1] < vy) &
+                 (coords[:, 2] >= 0) & (coords[:, 2] < vz))
+        coords = coords[valid].long()
+        feats = feats[valid]
+        # Flatten y*vx + x as scatter index
+        linear_idx = coords[:, 1] * vx + coords[:, 0]  # [M]
+        linear_idx = linear_idx.unsqueeze(1).expand_as(feats)  # [M, C]
+        output_flat = output[b].reshape(-1, num_channels)  # [vy*vx, C]
+        output_flat.scatter_add_(0, linear_idx, feats)
+
+    return output.permute(0, 3, 1, 2)  # [B, C, H, W]
 
 
 class VoxelPooling(Function):
@@ -69,4 +111,7 @@ class VoxelPooling(Function):
         return None, grad_input_features, None
 
 
-voxel_pooling = VoxelPooling.apply
+if _CUDA_AVAILABLE:
+    voxel_pooling = VoxelPooling.apply
+else:
+    voxel_pooling = _voxel_pooling_pure_pytorch

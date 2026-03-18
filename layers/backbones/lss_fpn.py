@@ -470,7 +470,7 @@ class LSSFPN(nn.Module):
                     self.voxel_size).int()
         
         feature_map = voxel_pooling(geom_xyz, img_feat_with_height.contiguous(),
-                                   self.voxel_num.cuda())
+                                   self.voxel_num)
         
         if is_return_height:
             return feature_map.contiguous(), height

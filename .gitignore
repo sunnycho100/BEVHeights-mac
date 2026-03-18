@@ -2,6 +2,7 @@
 *.ckpt
 *.pth
 *.pt
+checkpoints/
 
 # Python
 __pycache__/
@@ -21,3 +22,12 @@ env/
 
 # OS
 .DS_Store
+
+# Dataset & generated data
+single-infrastructure-side/
+data/dair-v2x-i
+data/dair-v2x-i-kitti/
+*.pkl
+
+# Outputs & logs
+outputs/

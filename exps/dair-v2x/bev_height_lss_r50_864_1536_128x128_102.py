@@ -372,8 +372,13 @@ def main(args: Namespace) -> None:
     trainer = pl.Trainer.from_argparse_args(args, callbacks=[checkpoint_callback])
     if args.evaluate:
         for ckpt_name in os.listdir(args.ckpt_path):
+            if not ckpt_name.endswith('.ckpt'):
+                continue
             model_pth = os.path.join(args.ckpt_path, ckpt_name)
-            trainer.test(model, ckpt_path=model_pth)
+            # Force CPU loading for Mac compatibility
+            ckpt = torch.load(model_pth, map_location='cpu')
+            model.load_state_dict(ckpt.get('state_dict', ckpt))
+            trainer.test(model)
     else:
         backup_codebase(os.path.join('./outputs/bev_height_lss_r50_864_1536_128x128', 'backup'))
         trainer.fit(model)
@@ -397,7 +402,8 @@ def run_cli():
         profiler='simple',
         deterministic=False,
         max_epochs=100,
-        accelerator='ddp',
+        accelerator=None,
+        gpus=0,
         num_sanity_val_steps=0,
         gradient_clip_val=5,
         limit_val_batches=0,
