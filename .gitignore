@@ -31,3 +31,7 @@ data/dair-v2x-i-kitti/
 
 # Outputs & logs
 outputs/
+
+# Internal notes
+plan/
+summary/
