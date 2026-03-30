@@ -166,18 +166,18 @@ class BEVHeightHead(CenterHead):
             heatmap = gt_bboxes_3d.new_zeros(
                 (len(self.class_names[idx]), feature_map_size[1],
                  feature_map_size[0]),
-                device='cuda')
+                device=gt_bboxes_3d.device)
 
             anno_box = gt_bboxes_3d.new_zeros((max_objs, 10),
                                               dtype=torch.float32,
-                                              device='cuda')
+                                              device=gt_bboxes_3d.device)
 
             ind = gt_labels_3d.new_zeros((max_objs),
                                          dtype=torch.int64,
-                                         device='cuda')
+                                         device=gt_bboxes_3d.device)
             mask = gt_bboxes_3d.new_zeros((max_objs),
                                           dtype=torch.uint8,
-                                          device='cuda')
+                                          device=gt_bboxes_3d.device)
 
             num_objs = min(task_boxes[idx].shape[0], max_objs)
 
@@ -211,7 +211,7 @@ class BEVHeightHead(CenterHead):
 
                     center = torch.tensor([coor_x, coor_y],
                                           dtype=torch.float32,
-                                          device='cuda')
+                                          device=gt_bboxes_3d.device)
                     center_int = center.to(torch.int32)
 
                     # throw out not in range objects to avoid out of array
@@ -237,7 +237,7 @@ class BEVHeightHead(CenterHead):
                     if self.norm_bbox:
                         box_dim = box_dim.log()
                     anno_box[new_idx] = torch.cat([
-                        center - torch.tensor([x, y], device='cuda'),
+                        center - torch.tensor([x, y], device=gt_bboxes_3d.device),
                         z.unsqueeze(0),
                         box_dim,
                         torch.sin(rot).unsqueeze(0),
