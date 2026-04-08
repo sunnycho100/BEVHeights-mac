@@ -25,12 +25,32 @@ env/
 
 # Dataset & generated data
 single-infrastructure-side/
+single-infrastructure-side-image/
+single-infrastructure-side 3/
+V2X-Raw-Datasets/
 data/dair-v2x-i
 data/dair-v2x-i-kitti/
+data/dair-v2x-c-i/
+data/dair-v2x-c-i
+data/dair-v2x-c-i-kitti/
+data/dair-v2x-i-s1/
+data/dair-v2x-i-s1
+data/dair-v2x-i-s1-kitti/
+data/dair-v2x-i-s2/
+data/dair-v2x-i-s2
+data/dair-v2x-i-s2-kitti/
+data/dair-v2x-v/
+data/dair-v2x-v
+data/dair-v2x-v-kitti/
+data/v2x-*-split*.json
 *.pkl
 
 # Outputs & logs
 outputs/
+*.log
+
+# External research repos
+external/
 
 # Internal notes
 plan/
